@@ -1,12 +1,11 @@
-package ru.hse.project.snow.white.controllers;
+package ru.hse.project.snow.white.services;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import ru.hse.project.snow.white.api.dto.Book;
 import ru.hse.project.snow.white.data.repositories.BookRepository;
-import ru.hse.project.snow.white.dto.Book;
 import ru.hse.project.snow.white.mappers.BookDataModelToBookDtoMapper;
 import ru.hse.project.snow.white.mappers.BookDtoToBookDataModeMapper;
 
@@ -16,10 +15,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
-@Slf4j
-@RestController
-@RequestMapping(path = "/books")
-public class BookController {
+@Service
+public class BooksServiceImpl implements BooksService {
 
     private final BookDataModelToBookDtoMapper bookDataModelToBookDtoMapper;
 
@@ -27,9 +24,8 @@ public class BookController {
 
     private final BookRepository bookRepository;
 
-    @GetMapping(path = "/{id}")
-    @ResponseBody
-    public Book getBook(@PathVariable("id") UUID id) {
+    @Override
+    public Book findBook(UUID id) {
         Optional<ru.hse.project.snow.white.data.Book> optionalBook = bookRepository.findById(id);
 
         if (optionalBook.isPresent()) {
@@ -41,9 +37,8 @@ public class BookController {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Book with id=" + id + " was not found");
     }
 
-    @GetMapping
-    @ResponseBody
-    public List<Book> getBooks() {
+    @Override
+    public List<Book> listBooks() {
         List<ru.hse.project.snow.white.data.Book> books = bookRepository.findAll();
 
         return books.stream()
@@ -51,9 +46,8 @@ public class BookController {
                 .collect(Collectors.toList());
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Book postBook(@RequestBody Book book) {
+    @Override
+    public Book saveNewBook(Book book) {
         return bookDataModelToBookDtoMapper.map(bookRepository.save(bookDtoToBookDataModeMapper.map(book)));
     }
 }
